@@ -1,0 +1,613 @@
+
+<style>
+  :root {
+    --accent: #5B4AE8;
+    --accent-light: #EEF0FD;
+    --accent-dark: #3C34A0;
+    --warn: #BA7517;
+    --warn-light: #FAEEDA;
+    --success: #0F6E56;
+    --success-light: #E1F5EE;
+    --danger: #A32D2D;
+    --danger-light: #FCEBEB;
+    --neutral: #5F5E5A;
+    --neutral-light: #F1EFE8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans, sans-serif); }
+
+  .sr-only { position:absolute;width:1px;height:1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
+
+  .nav { display:flex; gap:4px; flex-wrap:wrap; padding:1rem 0 0.5rem; border-bottom:0.5px solid var(--color-border-tertiary); margin-bottom:1.5rem; }
+  .nav-btn { font-size:12px; padding:5px 11px; border-radius:var(--border-radius-md); border:0.5px solid var(--color-border-secondary); background:transparent; color:var(--color-text-secondary); cursor:pointer; transition:all .15s; }
+  .nav-btn:hover { background:var(--color-background-secondary); color:var(--color-text-primary); }
+  .nav-btn.active { background:var(--accent-light); color:var(--accent-dark); border-color:#AFA9EC; font-weight:500; }
+
+  .section { display:none; }
+  .section.active { display:block; }
+
+  h2 { font-size:18px; font-weight:500; color:var(--color-text-primary); margin-bottom:0.5rem; }
+  h3 { font-size:15px; font-weight:500; color:var(--color-text-primary); margin:1.25rem 0 0.5rem; }
+  p { font-size:14px; color:var(--color-text-secondary); line-height:1.65; }
+  small { font-size:12px; color:var(--color-text-tertiary); }
+
+  .hero-box { background:var(--accent-light); border:0.5px solid #AFA9EC; border-radius:var(--border-radius-lg); padding:1rem 1.25rem; margin-bottom:1.25rem; }
+  .hero-box p { color:var(--accent-dark); font-size:14px; line-height:1.6; }
+  .hero-box strong { color:var(--accent-dark); font-weight:500; }
+
+  .metrics-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:10px; margin:1rem 0; }
+  .metric { background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:0.85rem 1rem; }
+  .metric .label { font-size:12px; color:var(--color-text-secondary); margin-bottom:4px; }
+  .metric .value { font-size:22px; font-weight:500; color:var(--color-text-primary); }
+  .metric .sub { font-size:11px; color:var(--color-text-tertiary); margin-top:2px; }
+
+  .card { background:var(--color-background-primary); border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-lg); padding:1rem 1.25rem; margin-bottom:0.85rem; }
+  .card-featured { border:2px solid #AFA9EC; }
+
+  .badge { display:inline-block; font-size:11px; padding:3px 9px; border-radius:var(--border-radius-md); font-weight:500; }
+  .badge-purple { background:var(--accent-light); color:var(--accent-dark); }
+  .badge-green { background:var(--success-light); color:var(--success); }
+  .badge-amber { background:var(--warn-light); color:var(--warn); }
+  .badge-red { background:var(--danger-light); color:var(--danger); }
+  .badge-gray { background:var(--neutral-light); color:var(--neutral); }
+
+  table { width:100%; border-collapse:collapse; font-size:13px; margin:0.75rem 0; }
+  th { text-align:left; font-weight:500; font-size:12px; color:var(--color-text-secondary); padding:6px 8px; border-bottom:0.5px solid var(--color-border-secondary); }
+  td { padding:7px 8px; border-bottom:0.5px solid var(--color-border-tertiary); color:var(--color-text-primary); vertical-align:top; }
+  tr:last-child td { border-bottom:none; }
+  .td-muted { color:var(--color-text-secondary); }
+
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:0.75rem 0; }
+  @media(max-width:460px){ .two-col { grid-template-columns:1fr; } }
+
+  .timeline { position:relative; padding-left:20px; }
+  .timeline::before { content:''; position:absolute; left:6px; top:0; bottom:0; width:0.5px; background:var(--color-border-secondary); }
+  .tl-item { position:relative; margin-bottom:1rem; }
+  .tl-dot { position:absolute; left:-17px; top:4px; width:10px; height:10px; border-radius:50%; border:0.5px solid var(--color-border-secondary); background:var(--accent); }
+  .tl-item h4 { font-size:13px; font-weight:500; color:var(--color-text-primary); margin-bottom:3px; }
+  .tl-item p { font-size:13px; }
+
+  .risk-row { display:flex; gap:8px; align-items:flex-start; padding:8px 0; border-bottom:0.5px solid var(--color-border-tertiary); }
+  .risk-row:last-child { border-bottom:none; }
+  .risk-label { font-size:13px; font-weight:500; color:var(--color-text-primary); min-width:160px; flex-shrink:0; }
+  .risk-desc { font-size:12px; color:var(--color-text-secondary); flex:1; }
+
+  .slide { background:var(--color-background-primary); border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-lg); padding:1rem 1.25rem; margin-bottom:0.85rem; }
+  .slide-num { font-size:11px; font-weight:500; color:var(--color-text-tertiary); margin-bottom:4px; }
+  .slide-title { font-size:15px; font-weight:500; color:var(--color-text-primary); margin-bottom:6px; }
+  .slide-body { font-size:13px; color:var(--color-text-secondary); line-height:1.6; }
+
+  .progress-bar { background:var(--color-background-secondary); border-radius:4px; height:6px; margin-top:4px; overflow:hidden; }
+  .progress-fill { height:100%; border-radius:4px; background:var(--accent); }
+
+  .chart-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:13px; }
+  .chart-label { min-width:90px; color:var(--color-text-secondary); font-size:12px; }
+  .chart-bar-wrap { flex:1; background:var(--color-background-secondary); border-radius:3px; height:14px; overflow:hidden; }
+  .chart-bar { height:100%; border-radius:3px; }
+  .chart-val { min-width:40px; text-align:right; color:var(--color-text-primary); font-size:12px; font-weight:500; }
+
+  .tag-row { display:flex; flex-wrap:wrap; gap:6px; margin:0.5rem 0; }
+
+  .comp-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin:0.75rem 0; }
+  .comp-card { border:0.5px solid var(--color-border-tertiary); border-radius:var(--border-radius-md); padding:0.75rem; }
+  .comp-card.winner { border:2px solid #AFA9EC; }
+  .comp-name { font-size:13px; font-weight:500; color:var(--color-text-primary); margin-bottom:6px; }
+  .comp-price { font-size:11px; color:var(--color-text-secondary); margin-bottom:4px; }
+  .comp-row { display:flex; justify-content:space-between; font-size:11px; color:var(--color-text-tertiary); margin-bottom:2px; }
+  .comp-row span:last-child { color:var(--color-text-primary); }
+
+  .funnel { display:flex; flex-direction:column; gap:4px; margin:0.75rem 0; }
+  .funnel-step { border-radius:var(--border-radius-md); padding:8px 12px; display:flex; justify-content:space-between; align-items:center; font-size:13px; }
+  .funnel-label { font-weight:500; }
+  .funnel-num { font-size:12px; opacity:.8; }
+
+  .unit-econ { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:0.75rem 0; }
+  .ue-item { background:var(--color-background-secondary); border-radius:var(--border-radius-md); padding:0.75rem; }
+  .ue-label { font-size:11px; color:var(--color-text-secondary); }
+  .ue-val { font-size:17px; font-weight:500; color:var(--color-text-primary); margin-top:2px; }
+  .ue-note { font-size:10px; color:var(--color-text-tertiary); margin-top:1px; }
+
+  .insight-box { background:var(--success-light); border:0.5px solid #9FE1CB; border-radius:var(--border-radius-md); padding:0.75rem 1rem; margin:0.75rem 0; }
+  .insight-box p { color:var(--success); font-size:13px; }
+  .warn-box { background:var(--warn-light); border:0.5px solid #FAC775; border-radius:var(--border-radius-md); padding:0.75rem 1rem; margin:0.75rem 0; }
+  .warn-box p { color:var(--warn); font-size:13px; }
+</style>
+
+<h2 class="sr-only">LaunchVector Graduate Tier — Full Startup Blueprint</h2>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="show('exec')">Executive Summary</button>
+  <button class="nav-btn" onclick="show('biz')">Business Plan</button>
+  <button class="nav-btn" onclick="show('deck')">Pitch Deck</button>
+  <button class="nav-btn" onclick="show('growth')">GTM & Growth</button>
+  <button class="nav-btn" onclick="show('finance')">Financials</button>
+  <button class="nav-btn" onclick="show('roadmap')">Roadmap</button>
+</div>
+
+<!-- SECTION 1: EXEC SUMMARY -->
+<div id="exec" class="section active">
+  <h2>Executive Summary — Graduate Tier</h2>
+  <div class="hero-box">
+    <p><strong>LaunchVector Grad</strong> is a $29/month AI-native job search platform purpose-built for fresh graduates — the 4M+ annual cohort who are <strong>underqualified for human reverse recruiters</strong> yet completely underserved by generic auto-apply tools. It combines autonomous ATS applications, AI resume coaching, and entry-level interview simulation at a price point less than a single textbook.</p>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric"><div class="label">Target price</div><div class="value">$29</div><div class="sub">per month</div></div>
+    <div class="metric"><div class="label">US grads/year</div><div class="value">4M+</div><div class="sub">annual cohort</div></div>
+    <div class="metric"><div class="label">Addressable</div><div class="value">~600K</div><div class="sub">willing to pay</div></div>
+    <div class="metric"><div class="label">SAM (grad)</div><div class="value">$210M</div><div class="sub">annual</div></div>
+    <div class="metric"><div class="label">Avg job search</div><div class="value">3–6 mo</div><div class="sub">grad timeline</div></div>
+    <div class="metric"><div class="label">Seed target</div><div class="value">$2M</div><div class="sub">$10M cap SAFE</div></div>
+  </div>
+
+  <h3>The Problem</h3>
+  <p>Fresh graduates face a brutal asymmetry: 200+ applicants per entry-level role, ATS systems that reject unoptimised resumes automatically, and zero budget for $2K–$15K human reverse recruiters. The $40K–$60K salary cohort is the <em>largest</em> group of active job seekers and the <em>least served</em> by any premium tool.</p>
+
+  <h3>The Solution</h3>
+  <p>A graduate-specific AI tier that delivers the <em>core magic</em> of LaunchVector — resume tailoring, autonomous ATS applications, hiring manager outreach, and interview coaching — tuned for entry-level roles, internship pipelines, and campus hiring cycles.</p>
+
+  <h3>Why Now</h3>
+  <div class="two-col">
+    <div class="card">
+      <span class="badge badge-purple">Structural</span>
+      <p style="margin-top:6px">AI flooding pipelines means 200+ applicants per entry role. Graduates without optimised applications are <em>invisible</em>.</p>
+    </div>
+    <div class="card">
+      <span class="badge badge-green">Market timing</span>
+      <p style="margin-top:6px">2025–2026 layoff cycle has created record graduate unemployment — demand for job search tools is at an all-time high.</p>
+    </div>
+    <div class="card">
+      <span class="badge badge-amber">Tech maturity</span>
+      <p style="margin-top:6px">Browser automation, LLM fine-tuning, and voice AI are now reliable enough to replace 80%+ of manual application labor.</p>
+    </div>
+    <div class="card">
+      <span class="badge badge-gray">No winner</span>
+      <p style="margin-top:6px">No reverse recruiting firm serves graduates — they can't afford the price. No SaaS tool serves them with intelligence — only volume.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 2: BUSINESS PLAN -->
+<div id="biz" class="section">
+  <h2>Business Plan</h2>
+
+  <h3>Problem Statement</h3>
+  <p>Fresh graduates are the worst-served cohort in the job search market. They lack professional networks, have thin resumes, and face ATS systems designed for experienced professionals. Human reverse recruiters price them out entirely. Generic auto-apply tools send identical resumes to 50 companies and wonder why nobody responds.</p>
+
+  <h3>Graduate-specific pain points</h3>
+  <table>
+    <tr><th>Pain</th><th>Impact</th><th>Current "solution"</th></tr>
+    <tr><td>No professional network</td><td class="td-muted">Can't get warm referrals</td><td class="td-muted">Cold apply to job board posts</td></tr>
+    <tr><td>Thin, one-page resume</td><td class="td-muted">ATS scores it poorly</td><td class="td-muted">Generic resume templates</td></tr>
+    <tr><td>No interview experience</td><td class="td-muted">Fails first screening</td><td class="td-muted">YouTube videos, maybe Glassdoor</td></tr>
+    <tr><td>No salary benchmark data</td><td class="td-muted">Undersells or oversells</td><td class="td-muted">Glassdoor estimates</td></tr>
+    <tr><td>No feedback on rejections</td><td class="td-muted">Repeats same mistakes</td><td class="td-muted">Nothing — black box</td></tr>
+    <tr><td>Overwhelmed by 100s of JDs</td><td class="td-muted">Applies randomly</td><td class="td-muted">Manual scrolling on LinkedIn</td></tr>
+  </table>
+
+  <h3>Product overview — Grad Tier ($29/month)</h3>
+  <div class="card card-featured">
+    <div style="margin-bottom:8px"><span class="badge badge-purple">LaunchVector Grad</span> <span class="badge badge-green" style="margin-left:4px">Most popular</span></div>
+    <table>
+      <tr><th>Feature</th><th>What it does</th><th>Grad-specific tuning</th></tr>
+      <tr><td>Autonomous Apply</td><td class="td-muted">20 tailored applications/week</td><td class="td-muted">Targets entry-level, internship, rotational programme roles</td></tr>
+      <tr><td>Resume builder AI</td><td class="td-muted">Tailors resume per JD</td><td class="td-muted">Optimises for projects, GPA, extracurriculars over experience</td></tr>
+      <tr><td>Job intelligence feed</td><td class="td-muted">Ranked matched roles</td><td class="td-muted">Filters by grad programmes, grad-friendly companies, campus hire cycles</td></tr>
+      <tr><td>Interview prep lite</td><td class="td-muted">Company briefs + questions</td><td class="td-muted">Focused on competency-based interviews common in grad schemes</td></tr>
+      <tr><td>Application dashboard</td><td class="td-muted">Live pipeline view</td><td class="td-muted">Shows every application, status, and estimated timeline to response</td></tr>
+      <tr><td>Salary intelligence</td><td class="td-muted">Entry-level salary data</td><td class="td-muted">Benchmarks by role, industry, and city — not just broad ranges</td></tr>
+    </table>
+  </div>
+
+  <h3>Full pricing ladder</h3>
+  <div class="comp-grid">
+    <div class="comp-card winner">
+      <div class="comp-name">Grad</div>
+      <div class="comp-price" style="color:var(--accent-dark);font-weight:500">$29/month</div>
+      <div class="comp-row"><span>Applications</span><span>20/week</span></div>
+      <div class="comp-row"><span>Outreach</span><span>—</span></div>
+      <div class="comp-row"><span>Interview AI</span><span>Basic</span></div>
+      <div class="comp-row"><span>Target</span><span>Graduates</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">Starter</div>
+      <div class="comp-price">$49/month</div>
+      <div class="comp-row"><span>Applications</span><span>30/week</span></div>
+      <div class="comp-row"><span>Outreach</span><span>—</span></div>
+      <div class="comp-row"><span>Interview AI</span><span>Standard</span></div>
+      <div class="comp-row"><span>Target</span><span>Early career</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">Professional</div>
+      <div class="comp-price">$149/month</div>
+      <div class="comp-row"><span>Applications</span><span>100/week</span></div>
+      <div class="comp-row"><span>Outreach</span><span>AI</span></div>
+      <div class="comp-row"><span>Interview AI</span><span>Voice</span></div>
+      <div class="comp-row"><span>Target</span><span>Mid-career</span></div>
+    </div>
+    <div class="comp-card">
+      <div class="comp-name">Executive</div>
+      <div class="comp-price">$349/month</div>
+      <div class="comp-row"><span>Applications</span><span>200/week</span></div>
+      <div class="comp-row"><span>Outreach</span><span>AI + warm</span></div>
+      <div class="comp-row"><span>Interview AI</span><span>Full voice</span></div>
+      <div class="comp-row"><span>Target</span><span>Senior $150K+</span></div>
+    </div>
+  </div>
+
+  <h3>Customer personas — graduates</h3>
+  <div class="two-col">
+    <div class="card">
+      <div style="margin-bottom:6px"><strong style="font-size:13px">Persona A — "The Overwhelmed STEM Grad"</strong></div>
+      <p style="font-size:12px">CS grad, 22, applying to 80+ jobs manually with 1 callback. Spends 15 hrs/week on job boards. Knows something is wrong. Would pay $29/mo without hesitation if it promises more callbacks.</p>
+    </div>
+    <div class="card">
+      <div style="margin-bottom:6px"><strong style="font-size:13px">Persona B — "The Ambitious Arts Grad"</strong></div>
+      <p style="font-size:12px">English grad, 22, trying to break into marketing or UX. Doesn't know how to make resume "ATS-proof." Needs coaching on how to frame non-technical skills for tech-adjacent roles.</p>
+    </div>
+    <div class="card">
+      <div style="margin-bottom:6px"><strong style="font-size:13px">Persona C — "The International Student"</strong></div>
+      <p style="font-size:12px">Engineering grad on OPT/Tier 2 visa. Applies only to roles that sponsor. Huge pain filtering 500 jobs by sponsorship status. High willingness to pay — stakes are extremely high.</p>
+    </div>
+    <div class="card">
+      <div style="margin-bottom:6px"><strong style="font-size:13px">Persona D — "The University Careers Team"</strong></div>
+      <p style="font-size:12px">B2B angle: university careers services offices. Buy institutional access for all students. One deal = 5,000+ grad users. Budget = £20K–£100K/year. Replaces generic career portals.</p>
+    </div>
+  </div>
+
+  <h3>Competitive advantages</h3>
+  <div class="risk-row"><div class="risk-label">Entry-level ML model</div><div class="risk-desc">Training outcome data on graduate roles specifically — which entry-level JDs convert, which ATS platforms screen grads out. No competitor has this data at the graduate level.</div></div>
+  <div class="risk-row"><div class="risk-label">Campus hiring intelligence</div><div class="risk-desc">Grad scheme cycles, early application deadlines, and internship pipelines are predictable. LaunchVector Grad surfaces them before competitors know they exist.</div></div>
+  <div class="risk-row"><div class="risk-label">University B2B flywheel</div><div class="risk-desc">One institutional deal unlocks hundreds of warm users. Careers offices become the distribution channel — replacing expensive paid acquisition.</div></div>
+  <div class="risk-row"><div class="risk-label">Upsell to Professional</div><div class="risk-desc">Graduates who land entry-level roles will use LaunchVector again in 2–3 years for their first career move. CAC paid once, LTV multiplied across career.</div></div>
+
+  <h3>Risks & mitigation</h3>
+  <div class="risk-row"><div class="risk-label"><span class="badge badge-red">HIGH</span> Thin resumes</div><div class="risk-desc">AI has less material to work with — mitigate by asking richer onboarding questions (projects, societies, GPA, internships) and training prompts on graduate-format resumes specifically.</div></div>
+  <div class="risk-row"><div class="risk-label"><span class="badge badge-red">HIGH</span> Low willingness to pay</div><div class="risk-desc">Graduates have low disposable income. Counter: $29 is less than Netflix + Spotify combined. Offer student email discount (verified via .edu / .ac.uk). Trial converts at higher rate when urgency is high.</div></div>
+  <div class="risk-row"><div class="risk-label"><span class="badge badge-amber">MED</span> ATS platform blocking</div><div class="risk-desc">Same risk as Pro tier. Multi-method submission (API-first, fingerprint randomisation, human fallback for high-value platforms like Goldman Sachs's custom ATS).</div></div>
+  <div class="risk-row"><div class="risk-label"><span class="badge badge-gray">LOW</span> Brand perception</div><div class="risk-desc">Graduates may feel "AI job searching" feels inauthentic. Counter with transparency: full dashboard showing every action taken, candidate controls what goes out. Position as "your AI career co-pilot, not a bot."</div></div>
+</div>
+
+<!-- SECTION 3: PITCH DECK -->
+<div id="deck" class="section">
+  <h2>Pitch Deck — Slide by Slide</h2>
+  <p style="margin-bottom:1rem">12-slide investor deck adapted for the graduate tier. Strategic framing positions the grad tier as the acquisition engine that feeds the Professional and Executive tiers.</p>
+
+  <div class="slide">
+    <div class="slide-num">Slide 1 — Title</div>
+    <div class="slide-title">LaunchVector Grad</div>
+    <div class="slide-body">Your AI job search team. Built for graduates. $29/month.<br><br><em>One-liner: "We give every graduate the same unfair advantage that $5,000/month human reverse recruiters give senior executives — at the price of a streaming subscription."</em></div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-num">Slide 2 — Problem</div>
+    <div class="slide-title">Graduates are the most disadvantaged job seekers — and the most ignored by premium tools</div>
+    <div class="slide-body">
+      Three brutal truths for the Class of 2026:<br>
+      • Average entry-level role has <strong>200–400 applicants</strong> — up 3× since AI flooding began<br>
+      • ATS systems reject ~75% of graduate resumes before a human reads them<br>
+      • Human reverse recruiters start at $2,000/month — the entire graduate cohort is priced out<br><br>
+      <em>4 million US graduates enter the workforce each year. Zero premium services exist for them.</em>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-num">Slide 3 — Solution</div>
+    <div class="slide-title">LaunchVector Grad: AI-native career intelligence, purpose-built for graduates</div>
+    <div class="slide-body">
+      <strong>20 tailored ATS applications/week</strong> — resume tuned to each job description<br>
+      <strong>Graduate job intelligence</strong> — grad schemes, early applications, visa-sponsored roles surfaced first<br>
+      <strong>Interview prep AI</strong> — competency-based interview coaching specific to entry-level formats<br>
+      <strong>Full transparency dashboard</strong> — every application, status, timeline<br><br>
+      <em>From resume upload to 20 live applications in under 30 minutes.</em>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-num">Slide 4 — Market opportunity</div>
+    <div class="slide-title">A $210M graduate-only SAM that no company is building for</div>
+    <div class="slide-body">
+      US graduates annually: <strong>4M</strong> | Willing to pay $20–$50/mo: <strong>~15%</strong> = 600K subscribers<br>
+      At $29/mo blended ARPU × 12 months: <strong>$210M graduate SAM</strong><br>
+      + UK/Canada/Australia: additional 2M+ graduates per year<br>
+      + University B2B: $50K–$250K institutional contracts per university<br>
+      + Long-term upsell: graduates become Professional/Executive subscribers in 3–5 years<br><br>
+      <em>No reverse recruiting company has ever crossed $50M ARR. LaunchVector is the first software-first entrant.</em>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-num">Slide 5 — Product demo</div>
+    <div class="slide-title">From graduation to 20 live applications in 27 minutes</div>
+    <div class="slide-body">
+      Step 1: Upload CV → AI extracts degree, GPA, projects, societies, internships (2 min)<br>
+      Step 2: Goal interview → target roles, salary floor, location, visa requirements (5 min)<br>
+      Step 3: Gap analysis → CV scored vs entry-level JDs; gaps flagged instantly<br>
+      Step 4: AI CV optimisation → rewritten for ATS; graduate format maintained (10 min)<br>
+      Step 5: Job curation → 20–30 matched graduate roles for approval (10 min)<br>
+      Step 6: Engine launches → applies 24/7; sends hiring manager messages; monitors status<br><br>
+      <em>Dashboard visual: 23 applications submitted, 4 recruiter replies, 2 phone screen invites — by Tuesday morning.</em>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-num">Slide 6 — Business model</div>
+    <div class="slide-title">Multi-tier SaaS with graduate as the acquisition engine</div>
+    <div class="slide-body">
+      <strong>Grad tier $29/mo</strong> → low CAC acquisition via universities, communities, viral placement stories<br>
+      <strong>Starter $49/mo</strong> → natural upsell after first job; early-career professionals<br>
+      <strong>Professional $149/mo</strong> → mid-career (2–5 years out); full platform access<br>
+      <strong>University B2B $50K–$250K/yr</strong> → careers offices buy institutional access<br>
+      <strong>Bootcamp/coding school partnerships</strong> → revenue share on placement success<br><br>
+      Unit economics (Grad tier): ARPU $29 · CAC $45 · Avg sub 4 months · LTV $116 · LTV:CAC 2.6x
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-num">Slide 7 — Traction (pre-launch signals)</div>
+    <div class="slide-title">Early validation signals</div>
+    <div class="slide-body">
+      • 12 of 15 graduates in discovery interviews said they would pay $29/month before product was built<br>
+      • Landing page (pre-product): 13% conversion to paid waitlist from graduate community posts<br>
+      • Beta interview rate: 19% of tailored applications received recruiter response (vs 5% industry avg)<br>
+      • 2 university careers offices expressed interest in institutional pilot discussions<br>
+      • 3 university career societies agreed to co-promote in exchange for free student access<br><br>
+      <em>Every metric is hypothesis-driven. Graduate applications → interview rate is the north-star KPI.</em>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-num">Slide 8 — Go-to-market</div>
+    <div class="slide-title">University-first, community-amplified</div>
+    <div class="slide-body">
+      <strong>Phase 1 (M1–6): Campus & community</strong><br>
+      University career society partnerships → free access → word-of-mouth<br>
+      Graduate Discord/Slack communities (GradCafe, The Student Room, r/cscareerquestions)<br>
+      Founder TikTok/LinkedIn: "I submitted 500 graduate applications, here's what got interviews"<br><br>
+      <strong>Phase 2 (M6–12): Institutional B2B</strong><br>
+      University careers offices → pilot deals → institutional subscriptions<br>
+      Coding bootcamps (General Assembly, Le Wagon) → revenue share on placements<br>
+      Graduate recruitment agencies → white-label API access<br><br>
+      CAC target: &lt;$30 via university channel vs $80–$150 via paid ads
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-num">Slide 9 — Competition</div>
+    <div class="slide-title">LaunchVector Grad owns the unclaimed quadrant</div>
+    <div class="slide-body">
+      <em>High intelligence, low price — no existing player is here.</em><br><br>
+      Human firms ($2K–$15K/mo): High intelligence, unaffordable for graduates<br>
+      LoopCV / JobCopilot ($10–$52/mo): Low cost but zero graduate-specific intelligence, no coaching<br>
+      LinkedIn Premium ($40/mo): Job visibility tool, not an application agent<br>
+      University portals (free): Institutional job boards with no personalisation or automation<br><br>
+      <strong>LaunchVector Grad ($29/mo): Graduate-specific AI intelligence + autonomous application + interview coaching.</strong> No competitor exists at this intersection.
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-num">Slide 10 — Financial projections</div>
+    <div class="slide-title">Path to $500K MRR by month 12 (all tiers combined)</div>
+    <div class="slide-body">
+      Month 3: 100 grad + 50 starter subscribers = $4.4K MRR<br>
+      Month 6: 800 grad + 200 starter subscribers = $33.2K MRR<br>
+      Month 9: 2,500 grad + 600 starter + 200 pro = $122.3K MRR<br>
+      Month 12: 5,000 grad + 1,200 starter + 600 pro = $307K MRR + 2 university B2B deals<br><br>
+      Gross margin: 72–76% (AI compute + minimal human ops)<br>
+      Break-even: Month 15 at current growth trajectory with $2M seed raise
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-num">Slide 11 — Vision</div>
+    <div class="slide-title">The graduate tier is the acquisition engine. The Professional tier is the business.</div>
+    <div class="slide-body">
+      <strong>Year 1:</strong> 5,000 grad subscribers. First university B2B deals. $300K+ MRR.<br>
+      <strong>Year 3:</strong> 50,000 grads placed. Thousands convert to Professional tier. University platform in 100+ institutions.<br>
+      <strong>Year 5:</strong> LaunchVector is the operating system for every professional's career — from graduation through their first executive role. One platform, four tiers, one data moat.<br><br>
+      Graduates who land jobs become the best marketing: "I got my first job at Google with LaunchVector." That testimonial is worth $0 to acquire.
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-num">Slide 12 — Funding ask</div>
+    <div class="slide-title">Raising $2.0M seed on $10M post-money SAFE</div>
+    <div class="slide-body">
+      Engineering (CTO + full-stack): 40% — $800K (ATS integrations, grad-mode AI, dashboard)<br>
+      AI/ML development: 20% — $400K (resume tailoring, grad outcome model, voice interview lite)<br>
+      Marketing & acquisition: 20% — $400K (university partnerships, content, communities)<br>
+      Operations & legal: 10% — $200K (entity, IP, Stripe, tools)<br>
+      Buffer: 10% — $200K (18-month runway to Series A)<br><br>
+      <em>Series A target (Month 12–15): $8–12M on $40–60M valuation, premised on 5,000+ grad subscribers + 2+ university B2B contracts.</em>
+    </div>
+  </div>
+</div>
+
+<!-- SECTION 4: GTM & GROWTH -->
+<div id="growth" class="section">
+  <h2>GTM Strategy & Growth</h2>
+
+  <h3>Graduate-specific acquisition channels</h3>
+  <table>
+    <tr><th>Channel</th><th>Tactic</th><th>CAC</th><th>Scale</th></tr>
+    <tr><td>University career societies</td><td class="td-muted">Free group access → word of mouth in cohort</td><td class="td-muted">&lt;$5</td><td class="td-muted">High</td></tr>
+    <tr><td>University careers offices</td><td class="td-muted">Pilot deal → institutional subscription</td><td class="td-muted">$0 (B2B)</td><td class="td-muted">Very high</td></tr>
+    <tr><td>Graduate Discord/Slack</td><td class="td-muted">Founder authentically posts data stories</td><td class="td-muted">&lt;$10</td><td class="td-muted">Medium</td></tr>
+    <tr><td>TikTok / Instagram content</td><td class="td-muted">"I sent 100 applications — here's what happened" (founder-led)</td><td class="td-muted">&lt;$15</td><td class="td-muted">Very high</td></tr>
+    <tr><td>SEO</td><td class="td-muted">"How to get a graduate job fast", "AI job application for graduates"</td><td class="td-muted">&lt;$25</td><td class="td-muted">High</td></tr>
+    <tr><td>Referral at placement</td><td class="td-muted">Graduate lands job → shares testimonial + referral code</td><td class="td-muted">~$30</td><td class="td-muted">Compounds</td></tr>
+    <tr><td>Coding bootcamps</td><td class="td-muted">Revenue share on placements (bootcamps already pay $5K–$15K/placement)</td><td class="td-muted">$0</td><td class="td-muted">Medium</td></tr>
+    <tr><td>Paid ads (post-seed)</td><td class="td-muted">Target: "graduate job applications", "ATS resume"</td><td class="td-muted">$50–90</td><td class="td-muted">Very high</td></tr>
+  </table>
+
+  <h3>Viral growth loops — graduate-specific</h3>
+  <div class="card">
+    <strong style="font-size:13px">1. First job testimonial flywheel</strong>
+    <p style="font-size:12px;margin-top:4px">Landing your <em>first job</em> is one of the highest-emotion life moments — higher than any career milestone after. Graduates post extensively on LinkedIn ("Excited to announce I'm joining..."). LaunchVector prompts a testimonial + referral code at that moment. Every testimonial reaches 200–500 peers in job search mode.</p>
+  </div>
+  <div class="card">
+    <strong style="font-size:13px">2. University cohort network effect</strong>
+    <p style="font-size:12px;margin-top:4px">When one student in a cohort gets more callbacks, they tell their coursemates. University social networks are tight and high-trust. One conversion in a cohort of 200 students → 10–20 organic sign-ups within 2 weeks. No paid acquisition needed.</p>
+  </div>
+  <div class="card">
+    <strong style="font-size:13px">3. Careers office institutional loop</strong>
+    <p style="font-size:12px;margin-top:4px">One careers office buys institutional access → placement rate improves → careers office presents at Times Higher Education / NACAC conference → 10+ other universities evaluate LaunchVector. Enterprise logo creates credibility that unlocks more enterprise deals.</p>
+  </div>
+  <div class="card">
+    <strong style="font-size:13px">4. Long-term upsell compounding</strong>
+    <p style="font-size:12px;margin-top:4px">Every graduate placed becomes a Professional tier subscriber in 2–5 years when they want their second job. CAC paid once at $29/mo acquisition price. LTV captured at $149/mo Professional pricing. CLV across career could exceed $2,000 per graduate placed.</p>
+  </div>
+
+  <h3>Partnership ideas</h3>
+  <div class="risk-row"><div class="risk-label">University careers offices</div><div class="risk-desc">Institutional subscriptions £20K–£100K/year. Position as "the AI layer your careers office doesn't have budget to build." Pilot free for 90 days, then convert.</div></div>
+  <div class="risk-row"><div class="risk-label">Coding bootcamps (GA, Le Wagon)</div><div class="risk-desc">Bootcamps already sell on placement rates. Revenue share: $50–$200 per successful placement. They already have the demand; LaunchVector provides the automation.</div></div>
+  <div class="risk-row"><div class="risk-label">Graduate recruitment agencies</div><div class="risk-desc">White-label LaunchVector's apply engine. Agency adds 5–10× markup and sells as "AI-powered graduate job search service." Zero new users needed from LaunchVector.</div></div>
+  <div class="risk-row"><div class="risk-label">University alumni networks</div><div class="risk-desc">Alumni networks have massive reach to recent grads. Co-branded LaunchVector Grad (e.g. "Oxford Careers × LaunchVector") creates instant trust and distribution.</div></div>
+  <div class="risk-row"><div class="risk-label">International student associations</div><div class="risk-desc">International students (OPT/Tier 2) have the highest urgency and highest willingness to pay. Partnership with ISSS offices or international student societies = warm, high-intent leads.</div></div>
+
+  <h3>Investor strategy</h3>
+  <div class="insight-box"><p><strong>Key narrative for investors:</strong> The graduate tier is not a charity play — it's the most efficient customer acquisition engine in the stack. CAC &lt;$30 via university channels vs $80–$150 via paid ads for Professional tier. Every graduate placed becomes a Professional subscriber in 3–5 years. The graduate tier <em>funds the data moat</em> and <em>builds the brand</em> that locks in the Professional tier.</p></div>
+  <div class="warn-box"><p><strong>Anticipate this objection:</strong> "Graduates can't afford your product." Answer: $29 is less than Spotify + Netflix. 15% of 4M graduates = 600K willing to pay. The B2B university channel removes price sensitivity entirely.</p></div>
+
+  <h3>Mistakes to avoid</h3>
+  <table>
+    <tr><th>Mistake</th><th>Why it kills the graduate tier</th></tr>
+    <tr><td>Pricing below $19/month</td><td class="td-muted">Signals commodity. Graduates associate low price with low quality. $29 is the magic number — high enough to signal intelligence, low enough to be impulsive.</td></tr>
+    <tr><td>Building interview AI before apply works</td><td class="td-muted">Interview prep only matters after candidates get interviews. Validate the apply engine generates callbacks first.</td></tr>
+    <tr><td>Targeting all graduates at once</td><td class="td-muted">Beachhead: CS/engineering grads in the UK or US. Then expand. Trying to serve arts grads and STEM grads with one product dilutes messaging.</td></tr>
+    <tr><td>Skipping the university B2B channel</td><td class="td-muted">It's the lowest CAC channel available and creates institutional credibility. One deal unlocks 5,000 warm users. Don't leave it until Month 9.</td></tr>
+    <tr><td>Not publishing placement data</td><td class="td-muted">Graduates are sceptical. "18% response rate vs 5% industry average" is the most powerful marketing message you have. Publish it monthly.</td></tr>
+  </table>
+</div>
+
+<!-- SECTION 5: FINANCIALS -->
+<div id="finance" class="section">
+  <h2>Financial Projections</h2>
+
+  <h3>Startup costs (pre-launch)</h3>
+  <table>
+    <tr><th>Category</th><th>Amount</th><th>Notes</th></tr>
+    <tr><td>Legal (Delaware C-Corp, IP, SAFE docs)</td><td>$8,000</td><td class="td-muted">Standard startup attorney</td></tr>
+    <tr><td>Domain, hosting setup</td><td>$2,000</td><td class="td-muted">Vercel, Railway, Supabase config</td></tr>
+    <tr><td>Design (brand, landing page)</td><td>$5,000</td><td class="td-muted">Freelance; grad-friendly aesthetic</td></tr>
+    <tr><td>LLM API costs (testing)</td><td>$3,000</td><td class="td-muted">Anthropic + OpenAI credits</td></tr>
+    <tr><td>Software tooling</td><td>$2,000</td><td class="td-muted">Stripe, PostHog, Resend, Instantly</td></tr>
+    <tr><td>Beta user incentives (50 grads)</td><td>$1,500</td><td class="td-muted">Amazon vouchers, free months</td></tr>
+    <tr><td>University partnership pilots (free access)</td><td>$2,000</td><td class="td-muted">Compute costs for 200 free beta users</td></tr>
+    <tr><td><strong>Total pre-launch</strong></td><td><strong>$23,500</strong></td><td></td></tr>
+  </table>
+
+  <h3>Unit economics — Grad tier</h3>
+  <div class="unit-econ">
+    <div class="ue-item"><div class="ue-label">Blended ARPU</div><div class="ue-val">$29</div><div class="ue-note">Year 1 / rises as upsell improves</div></div>
+    <div class="ue-item"><div class="ue-label">CAC (university channel)</div><div class="ue-val">&lt;$30</div><div class="ue-note">Vs $80–150 paid ads</div></div>
+    <div class="ue-item"><div class="ue-label">Avg subscription length</div><div class="ue-val">4 months</div><div class="ue-note">Longer than mid-career (search takes longer)</div></div>
+    <div class="ue-item"><div class="ue-label">LTV</div><div class="ue-val">$116</div><div class="ue-note">$29 × 4 months</div></div>
+    <div class="ue-item"><div class="ue-label">LTV:CAC</div><div class="ue-val">2.6–3.9×</div><div class="ue-note">Improves as university CAC dominates</div></div>
+    <div class="ue-item"><div class="ue-label">Gross margin</div><div class="ue-val">72–76%</div><div class="ue-note">AI compute + minimal human ops</div></div>
+    <div class="ue-item"><div class="ue-label">Monthly churn</div><div class="ue-val">18–22%</div><div class="ue-note">High = positive (job found signal)</div></div>
+    <div class="ue-item"><div class="ue-label">Payback period</div><div class="ue-val">~1 month</div><div class="ue-note">CAC recovered in first billing</div></div>
+  </div>
+
+  <h3>12-month revenue forecast (all tiers, grad as acquisition engine)</h3>
+  <table>
+    <tr><th>Month</th><th>Grad subs</th><th>Starter subs</th><th>Pro subs</th><th>Uni B2B</th><th>Total MRR</th></tr>
+    <tr><td>M3</td><td>100</td><td>30</td><td>0</td><td>—</td><td>$4.4K</td></tr>
+    <tr><td>M6</td><td>800</td><td>200</td><td>50</td><td>—</td><td>$40.3K</td></tr>
+    <tr><td>M9</td><td>2,500</td><td>600</td><td>200</td><td>—</td><td>$131.3K</td></tr>
+    <tr><td>M12</td><td>5,000</td><td>1,200</td><td>600</td><td>2 deals</td><td>$307K + $12K B2B</td></tr>
+  </table>
+
+  <div class="insight-box"><p><strong>Year 3 vision:</strong> 50,000 grad subscribers (at $29) + 8,000 Professional upsells (at $149) + 20 university contracts (avg $80K) = ~$3.6M ARR from grad tier alone. The grad tier is not a discount — it's the funnel top.</p></div>
+
+  <h3>Burn rate by phase</h3>
+  <div class="chart-row"><div class="chart-label">Founders only</div><div class="chart-bar-wrap"><div class="chart-bar" style="width:20%;background:var(--accent)"></div></div><div class="chart-val">$15K/mo</div></div>
+  <div class="chart-row"><div class="chart-label">Private beta</div><div class="chart-bar-wrap"><div class="chart-bar" style="width:35%;background:var(--accent)"></div></div><div class="chart-val">$28K/mo</div></div>
+  <div class="chart-row"><div class="chart-label">Post-launch</div><div class="chart-bar-wrap"><div class="chart-bar" style="width:55%;background:var(--accent)"></div></div><div class="chart-val">$60K/mo</div></div>
+  <div class="chart-row"><div class="chart-label">Post-seed scale</div><div class="chart-bar-wrap"><div class="chart-bar" style="width:85%;background:var(--accent)"></div></div><div class="chart-val">$140K/mo</div></div>
+
+  <h3>Funding stages</h3>
+  <table>
+    <tr><th>Round</th><th>Amount</th><th>Timing</th><th>Valuation</th><th>Purpose</th></tr>
+    <tr><td>Seed</td><td>$2.0M</td><td>Month 0–2</td><td>$10M SAFE</td><td>MVP + grad tier + university partnerships</td></tr>
+    <tr><td>Series A</td><td>$8–$12M</td><td>Month 12–15</td><td>$40–60M</td><td>UK/Canada expansion + ML model scale + enterprise sales</td></tr>
+    <tr><td>Series B</td><td>$25–$40M</td><td>Year 3</td><td>$150–200M</td><td>Category dominance; $50M ARR milestone</td></tr>
+  </table>
+
+  <h3>Break-even analysis</h3>
+  <table>
+    <tr><th>Component</th><th>Value</th></tr>
+    <tr><td>Monthly fixed costs (Month 12)</td><td>~$140K (lower than Pro-only model — grad tier uses same infra)</td></tr>
+    <tr><td>Gross margin</td><td>74%</td></tr>
+    <tr><td>Break-even MRR</td><td>~$189K</td></tr>
+    <tr><td>Break-even subscribers (blended ARPU $52)</td><td>~3,640</td></tr>
+    <tr><td>Projected break-even month</td><td><strong>Month 14</strong></td></tr>
+  </table>
+</div>
+
+<!-- SECTION 6: ROADMAP -->
+<div id="roadmap" class="section">
+  <h2>Execution Roadmap</h2>
+
+  <h3>30-day roadmap — Foundation</h3>
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot"></div><h4>Week 1 — Legal & infrastructure</h4><p>Delaware C-Corp incorporated. Co-founder equity + IP assignment executed. Domain acquired. Stripe, Supabase, Vercel configured. Landing page live with graduate waitlist capture.</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><h4>Week 2 — Graduate discovery</h4><p>15 graduate job-seeker interviews (target: recently graduated CS, engineering, business students). Document pain points. Rank features by urgency. Identify 3 university career society leads for partnership conversations.</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><h4>Week 3 — MVP scoping</h4><p>Define thin MVP: resume parsing → job matching → 5 ATS platform submissions → dashboard. Wireframe onboarding flow tuned for graduate CVs (projects, GPA, societies). Engineering spec written for Greenhouse + Lever (most common grad-employer ATS).</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><h4>Week 4 — Build begins + university outreach</h4><p>CTO begins Playwright-based ATS handler. Full-stack engineer wireframes dashboard. First university careers office contacted with free pilot offer. 25 waitlist sign-ups from founder's graduate network.</p></div>
+  </div>
+
+  <h3>90-day roadmap — Beta to launch</h3>
+  <div class="timeline">
+    <div class="tl-item"><div class="tl-dot"></div><h4>Weeks 5–6 — Private beta (50 graduates)</h4><p>Recruit beta users from university career societies + personal network. Daily feedback calls. Track interview rate obsessively. Target: &gt;15% of applications generate recruiter response.</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><h4>Week 7 — Quality hardening</h4><p>Reach &gt;90% ATS submit success rate across 5 platforms. Fix edge cases in graduate CV parsing (projects, dissertations, extracurriculars). Improve onboarding UX for 22-year-olds unfamiliar with job search tools.</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><h4>Week 8 — Monetisation setup</h4><p>Stripe billing live at $29/month Grad tier. Student email verification (.edu / .ac.uk) for 10% discount. Trial-to-paid conversion flow. Cancellation flow with feedback capture ("Did you find a job? Tell us about it.").</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><h4>Weeks 9–10 — ProductHunt + university launch</h4><p>Coordinated ProductHunt launch with beta community. First university careers office pilot goes live (free for 200 students, 90 days). Founder posts data story on TikTok + LinkedIn.</p></div>
+    <div class="tl-item"><div class="tl-dot"></div><h4>Weeks 11–12 — First 100 paying students</h4><p>Activate LinkedIn/TikTok content strategy. SEO articles: "How to get a graduate job in 2026 with AI." Launch referral code system. Graduate testimonials begin accumulating.</p></div>
+  </div>
+
+  <h3>12-month scaling roadmap — KPIs</h3>
+  <table>
+    <tr><th>Phase</th><th>Months</th><th>Key milestones</th><th>KPI target</th></tr>
+    <tr><td>Public launch</td><td>3–4</td><td class="td-muted">100 → 300 grad subscribers; outreach agent live; 3 PR placements</td><td>$8.7K MRR</td></tr>
+    <tr><td>Growth engine</td><td>4–6</td><td class="td-muted">800 grad subs; 20 ATS platforms; Growth Lead hired; first university B2B pilot</td><td>$40.3K MRR</td></tr>
+    <tr><td>Seed round</td><td>6</td><td class="td-muted">$50K+ MRR; 100+ documented placements; term sheet signed</td><td>$50K MRR</td></tr>
+    <tr><td>Feature expansion</td><td>7–8</td><td class="td-muted">Interview Intelligence module; ML outcome model V1 (grad-specific)</td><td>$90K MRR</td></tr>
+    <tr><td>University B2B entry</td><td>8–10</td><td class="td-muted">First 2 institutional deals; 2,500 grad subs; upsell to Starter visible</td><td>$131K MRR</td></tr>
+    <tr><td>Series A prep</td><td>10–12</td><td class="td-muted">UK expansion scoping; 5,000 grad subs; 600 Pro upsells; outcome model &gt;70% accuracy</td><td>$307K MRR</td></tr>
+  </table>
+
+  <h3>Key metrics to track — graduate tier</h3>
+  <div class="two-col">
+    <div>
+      <h4 style="font-size:13px;font-weight:500;margin-bottom:8px;color:var(--color-text-secondary)">Product health</h4>
+      <div class="risk-row"><div class="risk-label">Application submit rate</div><div class="risk-desc">&gt;90% success across 5 ATS platforms</div></div>
+      <div class="risk-row"><div class="risk-label">Recruiter response rate</div><div class="risk-desc">&gt;15% (vs 5% industry baseline for grads)</div></div>
+      <div class="risk-row"><div class="risk-label">Interview invite rate</div><div class="risk-desc">&gt;5% of submitted applications</div></div>
+      <div class="risk-row"><div class="risk-label">First job offer rate</div><div class="risk-desc">&gt;25% of beta users within 90 days</div></div>
+      <div class="risk-row"><div class="risk-label">Onboarding completion</div><div class="risk-desc">&gt;80% reach automation launch</div></div>
+      <div class="risk-row"><div class="risk-label">NPS (graduate cohort)</div><div class="risk-desc">&gt;45 (Month 3) → &gt;60 (Month 12)</div></div>
+    </div>
+    <div>
+      <h4 style="font-size:13px;font-weight:500;margin-bottom:8px;color:var(--color-text-secondary)">Business health</h4>
+      <div class="risk-row"><div class="risk-label">Grad MRR</div><div class="risk-desc">$4.4K (M3) → $145K (M12)</div></div>
+      <div class="risk-row"><div class="risk-label">University B2B deals</div><div class="risk-desc">0 (M6) → 2 (M12) → 10 (Year 3)</div></div>
+      <div class="risk-row"><div class="risk-label">CAC (university channel)</div><div class="risk-desc">&lt;$30 (target vs $80+ paid)</div></div>
+      <div class="risk-row"><div class="risk-label">Grad → Starter upsell rate</div><div class="risk-desc">&gt;15% within 18 months of first job</div></div>
+      <div class="risk-row"><div class="risk-label">Documented placements</div><div class="risk-desc">50 (M6) → 500 (M12) → publishable</div></div>
+      <div class="risk-row"><div class="risk-label">Monthly churn</div><div class="risk-desc">&lt;20% (success churn is a positive signal)</div></div>
+    </div>
+  </div>
+
+  <div class="insight-box" style="margin-top:1.25rem"><p><strong>The north-star metric:</strong> Graduate interview rate (% of tailored applications that generate a recruiter response). Target: &gt;15% vs industry baseline of 4–6% for graduates. Every product decision — resume tailoring quality, ATS success rate, job matching accuracy — is evaluated against whether it moves this number up.</p></div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const map = {exec:0,biz:1,deck:2,growth:3,finance:4,roadmap:5};
+  document.querySelectorAll('.nav-btn')[map[id]].classList.add('active');
+}
+</script>
