@@ -4,7 +4,13 @@
       "WebFetch(domain:claude.ai)",
       "Bash(Get-ChildItem -Path \"c:\\\\DEV\\\\CareerAI\" -Recurse -Force)",
       "Bash(Select-Object FullName, PSIsContainer)",
-      "Bash(Sort-Object FullName)"
+      "Bash(Sort-Object FullName)",
+      "Bash(Get-ChildItem -Path \"c:\\\\DEV\\\\CareerAI\" -Recurse -Depth 3)",
+      "Bash(Select-Object FullName)",
+      "Bash(ConvertTo-Csv -NoTypeInformation)",
+      "Bash(Select-Object -Skip 1)",
+      "Bash(npm view *)",
+      "Bash(npm install *)"
     ]
   }
 }

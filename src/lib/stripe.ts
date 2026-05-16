@@ -2,10 +2,11 @@ import Stripe from "stripe";
 import { Plan } from "@prisma/client";
 
 // Stripe client singleton
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-04-10",
-  typescript: true,
-});
+// Falls back to "sk_placeholder" at build time — real key required for API calls
+export const stripe = new Stripe(
+  process.env.STRIPE_SECRET_KEY ?? "sk_placeholder",
+  { apiVersion: "2025-02-24.acacia" }
+);
 
 // ─── Plan definitions ────────────────────────────────────────────────────────
 
@@ -65,7 +66,7 @@ export const PLANS: Record<
   },
 };
 
-// Max applications per week by plan
+// Max applications per month by plan
 export const PLAN_LIMITS: Record<Plan, number> = {
   STARTER: 20,
   PROFESSIONAL: 100,
@@ -85,7 +86,6 @@ export async function getOrCreateStripeCustomer({
 }): Promise<string> {
   const { prisma } = await import("@/lib/prisma");
 
-  // Check if subscription already has a customer ID
   const existing = await prisma.subscription.findUnique({
     where: { userId },
     select: { stripeCustomerId: true },
@@ -95,7 +95,6 @@ export async function getOrCreateStripeCustomer({
     return existing.stripeCustomerId;
   }
 
-  // Create new Stripe customer
   const customer = await stripe.customers.create({
     email,
     name: name || undefined,
@@ -145,7 +144,7 @@ export async function createCheckoutSession({
     metadata: { userId },
     subscription_data: {
       metadata: { userId },
-      trial_period_days: 7, // 7-day free trial on all plans
+      trial_period_days: 7,
     },
     allow_promotion_codes: true,
   });
@@ -159,7 +158,10 @@ export async function createCheckoutSession({
 export function mapStripeStatus(
   status: Stripe.Subscription.Status
 ): import("@prisma/client").SubscriptionStatus {
-  const map: Record<Stripe.Subscription.Status, import("@prisma/client").SubscriptionStatus> = {
+  const map: Record<
+    Stripe.Subscription.Status,
+    import("@prisma/client").SubscriptionStatus
+  > = {
     active: "ACTIVE",
     canceled: "CANCELED",
     past_due: "PAST_DUE",
@@ -178,5 +180,5 @@ export function getPlanFromPriceId(priceId: string): Plan {
   if (priceId === process.env.STRIPE_PRICE_STARTER) return "STARTER";
   if (priceId === process.env.STRIPE_PRICE_PROFESSIONAL) return "PROFESSIONAL";
   if (priceId === process.env.STRIPE_PRICE_EXECUTIVE) return "EXECUTIVE";
-  return "PROFESSIONAL"; // default
+  return "PROFESSIONAL";
 }

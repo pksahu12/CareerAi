@@ -1,0 +1,217 @@
+// Prisma schema for LaunchVector
+// Run: npx prisma db push  (development)
+//      npx prisma migrate dev (production migrations)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ──────────────────────────────────────────────────────────────────
+
+enum Plan {
+  STARTER
+  PROFESSIONAL
+  EXECUTIVE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  INCOMPLETE
+}
+
+enum OnboardingStep {
+  PROFILE
+  RESUME
+  PREFERENCES
+  COMPLETE
+}
+
+enum ApplicationStatus {
+  QUEUED
+  APPLIED
+  VIEWED
+  INTERVIEW
+  OFFER
+  REJECTED
+  WITHDRAWN
+}
+
+// ─── Core User ──────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique // Clerk user ID — never changes
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  profile      CandidateProfile?
+  subscription Subscription?
+  applications Application[]
+
+  @@index([clerkId])
+  @@index([email])
+}
+
+// ─── Candidate Profile ──────────────────────────────────────────────────────
+
+model CandidateProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Onboarding state
+  onboardingStep OnboardingStep @default(PROFILE)
+  onboardingDone Boolean        @default(false)
+
+  // Resume
+  resumeUrl      String? // S3/storage URL to original file
+  resumeText     String? @db.Text // Extracted plain text for AI
+  resumeJsonData Json?   // Structured parsed resume (skills, experience, etc.)
+
+  // Job preferences (flexible JSON — avoids migrations for new fields)
+  // Shape: { targetRoles: string[], targetSalaryMin: number, targetSalaryMax: number,
+  //          locations: string[], remote: boolean, industries: string[],
+  //          companySizes: string[], dealBreakers: string[] }
+  preferencesData Json?
+
+  // AI enrichment
+  embeddingUpdatedAt DateTime? // When resume embedding was last computed
+  profileScore       Int?      // 0–100 profile completeness score
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ─── Billing / Subscription ─────────────────────────────────────────────────
+
+model Subscription {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Stripe IDs
+  stripeCustomerId     String  @unique
+  stripeSubscriptionId String? @unique
+  stripePriceId        String?
+  stripeProductId      String?
+
+  // Plan state
+  plan   Plan               @default(STARTER)
+  status SubscriptionStatus @default(TRIALING)
+
+  // Billing periods
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  trialEnd           DateTime?
+  cancelAtPeriodEnd  Boolean   @default(false)
+
+  // Usage this period
+  applicationsUsed Int @default(0)
+  applicationsMax  Int @default(20) // Set by plan: 20 / 100 / 200
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+}
+
+// ─── Jobs (populated in Phase 2) ────────────────────────────────────────────
+
+model Job {
+  id          String  @id @default(cuid())
+  externalId  String? // ID from source (Indeed, Adzuna, etc.)
+  source      String? // "indeed" | "adzuna" | "manual"
+  title       String
+  company     String
+  location    String?
+  remote      Boolean @default(false)
+  salaryMin   Int?
+  salaryMax   Int?
+  description String? @db.Text
+  atsUrl      String? // Direct application URL
+  atsType     String? // "greenhouse" | "lever" | "workday" | etc.
+
+  // AI enrichment
+  embedding   Bytes?   // pgvector embedding (Phase 2)
+  tags        String[] // Extracted skill tags
+
+  postedAt   DateTime?
+  expiresAt  DateTime?
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  applications Application[]
+
+  @@unique([externalId, source])
+  @@index([company])
+  @@index([isActive])
+  @@index([postedAt])
+}
+
+// ─── Applications ────────────────────────────────────────────────────────────
+
+model Application {
+  id     String @id @default(cuid())
+  userId String
+  jobId  String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job    Job    @relation(fields: [jobId], references: [id])
+
+  status ApplicationStatus @default(QUEUED)
+
+  // Resume version used for this application
+  resumeVersion Int    @default(1)
+  resumeUsed    String? @db.Text // The actual tailored resume text sent
+
+  // Cover letter
+  coverLetter String? @db.Text
+
+  // ATS submission tracking
+  submittedAt      DateTime?
+  confirmationText String?   // ATS confirmation message if any
+  screenshotUrl    String?   // Screenshot of successful submission
+
+  // Outreach
+  outreachSent   Boolean   @default(false)
+  outreachSentAt DateTime?
+
+  // Outcome tracking
+  viewedByEmployer Boolean   @default(false)
+  viewedAt         DateTime?
+  interviewAt      DateTime?
+  offerReceivedAt  DateTime?
+  rejectedAt       DateTime?
+
+  // AI scoring
+  matchScore Int? // 0–100 match score at time of application
+
+  // Metadata for outcome learning loop (Phase 3+)
+  outcomeData Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, jobId])
+  @@index([userId])
+  @@index([jobId])
+  @@index([status])
+  @@index([createdAt])
+}

@@ -9,22 +9,31 @@ export async function POST(req: Request) {
   const signature = headers().get("stripe-signature");
 
   if (!signature) {
-    return NextResponse.json({ error: "Missing stripe-signature header" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing stripe-signature header" },
+      { status: 400 }
+    );
   }
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!);
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
   } catch (err) {
     console.error("[Stripe Webhook] Signature verification failed:", err);
-    return NextResponse.json({ error: "Invalid webhook signature" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid webhook signature" },
+      { status: 400 }
+    );
   }
 
   try {
     switch (event.type) {
-      // ── Checkout completed — user subscribed ─────────────────────────────
       case "checkout.session.completed": {
-        const session = event.data.object as Stripe.CheckoutSession;
+        const session = event.data.object as Stripe.Checkout.Session;
         if (session.mode !== "subscription") break;
 
         const userId = session.metadata?.userId;
@@ -47,7 +56,9 @@ export async function POST(req: Request) {
             status: mapStripeStatus(subscription.status),
             currentPeriodStart: new Date(subscription.current_period_start * 1000),
             currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-            trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+            trialEnd: subscription.trial_end
+              ? new Date(subscription.trial_end * 1000)
+              : null,
             applicationsMax: PLAN_LIMITS[plan],
           },
           update: {
@@ -59,7 +70,9 @@ export async function POST(req: Request) {
             status: mapStripeStatus(subscription.status),
             currentPeriodStart: new Date(subscription.current_period_start * 1000),
             currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-            trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+            trialEnd: subscription.trial_end
+              ? new Date(subscription.trial_end * 1000)
+              : null,
             applicationsMax: PLAN_LIMITS[plan],
           },
         });
@@ -68,7 +81,6 @@ export async function POST(req: Request) {
         break;
       }
 
-      // ── Subscription updated (plan change, renewal, etc.) ─────────────────
       case "customer.subscription.updated": {
         const subscription = event.data.object as Stripe.Subscription;
         const userId = subscription.metadata?.userId;
@@ -85,7 +97,9 @@ export async function POST(req: Request) {
             status: mapStripeStatus(subscription.status),
             currentPeriodStart: new Date(subscription.current_period_start * 1000),
             currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-            trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+            trialEnd: subscription.trial_end
+              ? new Date(subscription.trial_end * 1000)
+              : null,
             cancelAtPeriodEnd: subscription.cancel_at_period_end,
             applicationsMax: PLAN_LIMITS[plan],
           },
@@ -95,7 +109,6 @@ export async function POST(req: Request) {
         break;
       }
 
-      // ── Subscription cancelled ────────────────────────────────────────────
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
 
@@ -111,21 +124,19 @@ export async function POST(req: Request) {
         break;
       }
 
-      // ── Invoice paid — reset monthly usage counter ────────────────────────
       case "invoice.payment_succeeded": {
         const invoice = event.data.object as Stripe.Invoice;
         if (invoice.billing_reason === "subscription_cycle") {
           const subscriptionId = invoice.subscription as string;
           await prisma.subscription.update({
             where: { stripeSubscriptionId: subscriptionId },
-            data: { applicationsUsed: 0 }, // Reset monthly usage
+            data: { applicationsUsed: 0 },
           });
           console.log(`[Stripe Webhook] Usage reset for subscription: ${subscriptionId}`);
         }
         break;
       }
 
-      // ── Payment failed ────────────────────────────────────────────────────
       case "invoice.payment_failed": {
         const invoice = event.data.object as Stripe.Invoice;
         const subscriptionId = invoice.subscription as string;
@@ -134,7 +145,6 @@ export async function POST(req: Request) {
             where: { stripeSubscriptionId: subscriptionId },
             data: { status: "PAST_DUE" },
           });
-          // TODO: send dunning email via Resend
         }
         break;
       }
@@ -146,6 +156,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("[Stripe Webhook] Error processing event:", error);
-    return NextResponse.json({ error: "Webhook processing failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Webhook processing failed" },
+      { status: 500 }
+    );
   }
 }
