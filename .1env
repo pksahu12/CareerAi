@@ -1,0 +1,49 @@
+# ── Clerk (Auth) ──────────────────────────────────────────────────────────────
+# https://dashboard.clerk.com → API Keys
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_Z2xvd2luZy1mb3dsLTEyLmNsZXJrLmFjY291bnRzLmRldiQ
+CLERK_SECRET_KEY=sk_test_3PoYQJInUptVhNROlz8W7hxVWXHiAKO4FSDElJTISG
+CLERK_WEBHOOK_SECRET=whsec_APVkAgdDT6kdoL8pK9UI1XZskYk6Z8+S
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_Z2xvd2luZy1mb3dsLTEyLmNsZXJrLmFjY291bnRzLmRldiQ
+# Clerk redirect URLs (leave as-is for local dev )
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding
+DB_PASS=bThpSmw6TbYAlE14
+
+# ── Supabase / PostgreSQL ─────────────────────────────────────────────────────
+# https://supabase.com → Project Settings → Database → Connection string 
+# IMPORTANT: DATABASE_URL must be the transaction pooler URL (port 6543)
+NEXT_PUBLIC_SUPABASE_URL=https://btunonhwvumixlnavuuq.supabase.co
+DIRECT_URL=postgresql://postgres:pk_test_Z2xvd2luZy1mb3dsLTEyLmNsZXJrLmFjY291bnRzLmRldiQ@db.btunonhwvumixlnavuuq.supabase.co:5432/postgres
+DATABASE_URL=postgresql://postgres.btunonhwvumixlnavuuq:${DB_PASS}@aws-0-eu-west-1.pooler.supabase.com:6543/postgres
+# DIRECT_URL is only for Prisma CLI migrations (port 5432)
+#DIRECT_URL=postgresql://postgres.[project-ref]:[password]@aws-0-eu-west-1.pooler.supabase.com:5432/postgress
+NEXT_PUBLIC_SUPABASE_URL=https://btunonhwvumixlnavuuq.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_-p5vd1jmgmkb6gRN7xY-yw_rlLLEBGq 
+# Connect to Supabase via connection pooling
+DATABASE_URL="postgresql://postgres.btunonhwvumixlnavuuq:${DB_PASS}@aws-0-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+
+# Direct connection to the database. Used for migrations
+DIRECT_URL="postgresql://postgres.btunonhwvumixlnavuuq:${DB_PASS}@aws-0-eu-west-1.pooler.supabase.com:5432/postgres"
+# ── Stripe (Billing) ──────────────────────────────────────────────────────────
+# https://dashboard.stripe.com → Developers → API keys
+STRIPE_SECRET_KEY=sk_test_
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_
+STRIPE_WEBHOOK_SECRET=whsec_
+
+# Stripe Price IDs — create products in Stripe Dashboard first
+STRIPE_PRICE_STARTER=price_
+STRIPE_PRICE_PROFESSIONAL=price_
+STRIPE_PRICE_EXECUTIVE=price_
+
+# ── Contentful (CMS) ──────────────────────────────────────────────────────────
+# https://app.contentful.com → Space Settings → API keys
+CONTENTFUL_SPACE_ID=6ao4hnfitczn
+CONTENTFUL_ACCESS_TOKEN=vF4oggg_4-yzeT-JAjBG_Q3c-rX1A2oUivaBo7Y7JfA # Content Delivery API (published content)
+CONTENTFUL_PREVIEW_ACCESS_TOKEN=96ahs8V1kjysjKiwWc19t1Od6WFtR70zrwmOXnbiu28   # Content Preview API (draft content)
+CONTENTFUL_PREVIEW_SECRET=         # Arbitrary secret string for /api/preview
+CONTENTFUL_WEBHOOK_SECRET=         # Shared secret for Contentful → Next.js revalidation
+
+# ── App ───────────────────────────────────────────────────────────────────────
+NEXT_PUBLIC_APP_URL=http://localhost:3000
